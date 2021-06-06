@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 
+	"github.com/databrickslabs/terraform-provider-databricks/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/validation"
 )
@@ -24,7 +25,7 @@ func (m AzureBlobMount) Source() string {
 }
 
 // Config ...
-func (m AzureBlobMount) Config() map[string]string {
+func (m AzureBlobMount) Config(client *common.DatabricksClient) map[string]string {
 	var confKey string
 	if m.AuthType == "SAS" {
 		confKey = fmt.Sprintf("fs.azure.sas.%s.%s.blob.core.windows.net", m.ContainerName, m.StorageAccountName)
