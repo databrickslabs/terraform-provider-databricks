@@ -69,7 +69,7 @@ type tokenInfo struct {
 
 var authorizerMutex sync.Mutex
 
-func (aa *AzureAuth) getAzureEnvironment() (azure.Environment, error) {
+func (aa *AzureAuth) GetAzureEnvironment() (azure.Environment, error) {
 	// Used for unit testing purposes
 	if aa.azureManagementEndpoint != "" {
 		return azure.Environment{
@@ -177,7 +177,7 @@ func (aa *AzureAuth) simpleAADRequestVisitor(
 	ctx context.Context,
 	authorizerFactory func(resource string) (autorest.Authorizer, error),
 	visitors ...func(r *http.Request, ma autorest.Authorizer) error) (func(r *http.Request) error, error) {
-	env, err := aa.getAzureEnvironment()
+	env, err := aa.GetAzureEnvironment()
 	if err != nil {
 		return nil, err
 	}
@@ -225,7 +225,7 @@ func (aa *AzureAuth) acquirePAT(
 	if aa.temporaryPat != nil {
 		return aa.temporaryPat, nil
 	}
-	env, err := aa.getAzureEnvironment()
+	env, err := aa.GetAzureEnvironment()
 	if err != nil {
 		return nil, err
 	}
@@ -299,7 +299,7 @@ func (aa *AzureAuth) ensureWorkspaceURL(ctx context.Context,
 		return fmt.Errorf("somehow resource id is not set")
 	}
 	log.Println("[DEBUG] Getting Workspace ID via management token.")
-	env, err := aa.getAzureEnvironment()
+	env, err := aa.GetAzureEnvironment()
 	if err != nil {
 		return maybeExtendAuthzError(err)
 	}
@@ -346,7 +346,7 @@ func (aa *AzureAuth) getClientSecretAuthorizer(resource string) (autorest.Author
 		// todo: probably should be two different ones...
 		return aa.authorizer, nil
 	}
-	env, err := aa.getAzureEnvironment()
+	env, err := aa.GetAzureEnvironment()
 	if err != nil {
 		return nil, err
 	}

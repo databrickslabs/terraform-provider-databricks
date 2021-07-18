@@ -336,7 +336,7 @@ func TestAzureAuth_configureWithClientSecretAAD(t *testing.T) {
 func TestAzureEnvironment_WithAzureManagementEndpoint(t *testing.T) {
 	fakeEndpoint := "http://google.com"
 	aa := AzureAuth{azureManagementEndpoint: fakeEndpoint}
-	env, err := aa.getAzureEnvironment()
+	env, err := aa.GetAzureEnvironment()
 	assert.Nil(t, err)
 	// This value should be populated with azureManagementEndpoint for testing
 	assert.Equal(t, env.ResourceManagerEndpoint, fakeEndpoint)
@@ -345,40 +345,40 @@ func TestAzureEnvironment_WithAzureManagementEndpoint(t *testing.T) {
 
 	// Making the azureManagementEndpoint empty should yield PublicCloud
 	aa.azureManagementEndpoint = ""
-	env, err = aa.getAzureEnvironment()
+	env, err = aa.GetAzureEnvironment()
 	assert.Nil(t, err)
 	assert.Equal(t, azure.PublicCloud, env)
 }
 
 func TestAzureEnvironment(t *testing.T) {
 	aa := AzureAuth{}
-	env, err := aa.getAzureEnvironment()
+	env, err := aa.GetAzureEnvironment()
 
 	assert.Nil(t, err)
 	assert.Equal(t, azure.PublicCloud, env)
 
 	aa.Environment = "public"
-	env, err = aa.getAzureEnvironment()
+	env, err = aa.GetAzureEnvironment()
 	assert.Nil(t, err)
 	assert.Equal(t, azure.PublicCloud, env)
 
 	aa.Environment = "china"
-	env, err = aa.getAzureEnvironment()
+	env, err = aa.GetAzureEnvironment()
 	assert.Nil(t, err)
 	assert.Equal(t, azure.ChinaCloud, env)
 
 	aa.Environment = "german"
-	env, err = aa.getAzureEnvironment()
+	env, err = aa.GetAzureEnvironment()
 	assert.Nil(t, err)
 	assert.Equal(t, azure.GermanCloud, env)
 
 	aa.Environment = "usgovernment"
-	env, err = aa.getAzureEnvironment()
+	env, err = aa.GetAzureEnvironment()
 	assert.Nil(t, err)
 	assert.Equal(t, azure.USGovernmentCloud, env)
 
 	aa.Environment = "xyzdummy"
-	_, err = aa.getAzureEnvironment()
+	_, err = aa.GetAzureEnvironment()
 	assert.NotNil(t, err)
 }
 
@@ -386,7 +386,7 @@ func TestInvalidAzureEnvironment(t *testing.T) {
 	aa := AzureAuth{}
 
 	aa.Environment = "xyzdummy"
-	_, envErr := aa.getAzureEnvironment()
+	_, envErr := aa.GetAzureEnvironment()
 	assert.NotNil(t, envErr)
 
 	mockFunc := func(resource string) (autorest.Authorizer, error) {

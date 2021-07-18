@@ -60,7 +60,8 @@ func testWithNewSecretScope(t *testing.T, callback func(string, string),
 }
 
 func testMounting(t *testing.T, mp MountPoint, m Mount) {
-	source, err := mp.Mount(m)
+	client := common.CommonEnvironmentClient()
+	source, err := mp.Mount(m, client)
 	assert.Equal(t, m.Source(), source)
 	assert.NoError(t, err)
 	defer func() {
@@ -86,6 +87,7 @@ func TestAccSourceOnInvalidMountFails(t *testing.T) {
 
 func TestAccInvalidSecretScopeFails(t *testing.T) {
 	_, mp := mountPointThroughReusedCluster(t)
+	client := common.CommonEnvironmentClient()
 	source, err := mp.Mount(AzureADLSGen1Mount{
 		ClientID:        "abc",
 		TenantID:        "bcd",
@@ -94,7 +96,7 @@ func TestAccInvalidSecretScopeFails(t *testing.T) {
 		Directory:       "/",
 		SecretKey:       "key",
 		SecretScope:     "y",
-	})
+	}, client)
 	assert.Equal(t, "", source)
 	qa.AssertErrorStartsWith(t, err, "Secret does not exist with scope: y and key: key")
 }
@@ -152,8 +154,10 @@ func testMountFuncHelper(t *testing.T, mountFunc func(mp MountPoint, mount Mount
 
 type mockMount struct{}
 
-func (t mockMount) Source() string            { return "fake-mount" }
-func (t mockMount) Config() map[string]string { return map[string]string{"fake-key": "fake-value"} }
+func (t mockMount) Source() string { return "fake-mount" }
+func (t mockMount) Config(client *common.DatabricksClient) map[string]string {
+	return map[string]string{"fake-key": "fake-value"}
+}
 
 func TestMountPoint_Mount(t *testing.T) {
 	mount := mockMount{}
@@ -180,7 +184,8 @@ func TestMountPoint_Mount(t *testing.T) {
 		dbutils.notebook.exit(mount_source)
 	`, mountName, expectedMountSource, expectedMountConfig)
 	testMountFuncHelper(t, func(mp MountPoint, mount Mount) (s string, e error) {
-		return mp.Mount(mount)
+		client := common.CommonEnvironmentClient()
+		return mp.Mount(mount, client)
 	}, mount, mountName, expectedCommand)
 }
 

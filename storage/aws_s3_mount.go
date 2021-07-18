@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws/arn"
+	"github.com/databrickslabs/terraform-provider-databricks/common"
 	"github.com/databrickslabs/terraform-provider-databricks/compute"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
@@ -22,7 +23,7 @@ func (m AWSIamMount) Source() string {
 }
 
 // Config ...
-func (m AWSIamMount) Config() map[string]string {
+func (m AWSIamMount) Config(client *common.DatabricksClient) map[string]string {
 	return make(map[string]string) // return empty map so nil map does not marshal to null
 }
 

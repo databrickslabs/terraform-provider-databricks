@@ -3,6 +3,8 @@ package storage
 import (
 	"fmt"
 
+	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/databrickslabs/terraform-provider-databricks/common"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
@@ -25,13 +27,20 @@ func (m AzureADLSGen2Mount) Source() string {
 }
 
 // Config returns mount configurations
-func (m AzureADLSGen2Mount) Config() map[string]string {
+func (m AzureADLSGen2Mount) Config(client *common.DatabricksClient) map[string]string {
+	azureEnvironment, err := client.AzureAuth.GetAzureEnvironment()
+	var clientEndpoint string
+	if err != nil {
+		clientEndpoint = azure.PublicCloud.ActiveDirectoryEndpoint
+	} else {
+		clientEndpoint = azureEnvironment.ActiveDirectoryEndpoint
+	}
 	return map[string]string{
 		"fs.azure.account.auth.type":                          "OAuth",
 		"fs.azure.account.oauth.provider.type":                "org.apache.hadoop.fs.azurebfs.oauth2.ClientCredsTokenProvider",
 		"fs.azure.account.oauth2.client.id":                   m.ClientID,
 		"fs.azure.account.oauth2.client.secret":               fmt.Sprintf("{secrets/%s/%s}", m.SecretScope, m.SecretKey),
-		"fs.azure.account.oauth2.client.endpoint":             fmt.Sprintf("https://login.microsoftonline.com/%s/oauth2/token", m.TenantID),
+		"fs.azure.account.oauth2.client.endpoint":             fmt.Sprintf("%s/%s/oauth2/token", clientEndpoint, m.TenantID),
 		"fs.azure.createRemoteFileSystemDuringInitialization": fmt.Sprintf("%t", m.InitializeFileSystem),
 	}
 }

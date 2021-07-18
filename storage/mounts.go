@@ -19,7 +19,7 @@ import (
 // Mount exposes generic url & extra config map options
 type Mount interface {
 	Source() string
-	Config() map[string]string
+	Config(client *common.DatabricksClient) map[string]string
 }
 
 // MountPoint is something actionable
@@ -56,8 +56,8 @@ func (mp MountPoint) Delete() error {
 }
 
 // Mount mounts object store on workspace
-func (mp MountPoint) Mount(mo Mount) (source string, err error) {
-	extraConfigs, err := json.Marshal(mo.Config())
+func (mp MountPoint) Mount(mo Mount, client *common.DatabricksClient) (source string, err error) {
+	extraConfigs, err := json.Marshal(mo.Config(client))
 	if err != nil {
 		return
 	}
@@ -195,8 +195,9 @@ func mountCreate(tpl interface{}, r *schema.Resource) func(context.Context, *sch
 		if err != nil {
 			return diag.FromErr(err)
 		}
+		client := m.(*common.DatabricksClient)
 		log.Printf("[INFO] Mounting %s at /mnt/%s", mountConfig.Source(), d.Id())
-		source, err := mountPoint.Mount(mountConfig)
+		source, err := mountPoint.Mount(mountConfig, client)
 		if err != nil {
 			return diag.FromErr(err)
 		}
